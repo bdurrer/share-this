@@ -48,7 +48,6 @@ export default (opts) => {
     };
 
     const selectionCheck = ({ type }) => {
-        console.log('selectionCheck');
         const shouldHavePopover = type === "selectionchange";
         if (!popover !== shouldHavePopover) {
             // Safari iOS fires selectionchange *before* click, so tapping on a sharer would be prevented
