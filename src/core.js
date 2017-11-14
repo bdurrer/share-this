@@ -17,7 +17,7 @@ export default (opts) => {
 
     let initialized = false;
     let destroyed = false;
-    let ticking = false;
+    let scrollHandlerTicking = false;
 
     let _document = _undefined;
     let _window = _undefined;
@@ -35,15 +35,15 @@ export default (opts) => {
     };
 
     const scrollHandler = () => {
-        if (!ticking) {
+        if (!scrollHandlerTicking) {
             // non-blocking event handling
             window.requestAnimationFrame(() => {
                 if (popover) {
                     stylePopover(popover, getConstrainedRange(), options);
+                    scrollHandlerTicking = false;
                 }
             });
-
-            ticking = true;
+            scrollHandlerTicking = true;
         }
     };
 
@@ -132,8 +132,8 @@ export default (opts) => {
             }
 
             eventTypes.forEach(addListener);
-            _window.addEventListener("resize", resizeHandler);
-            _window.addEventListener("scroll", scrollHandler);
+            _window.addEventListener("resize", resizeHandler, { passive: true });
+            _window.addEventListener("scroll", scrollHandler, { passive: true });
 
             lifeCycle = lifeCycleFactory(_document);
 
@@ -154,9 +154,13 @@ export default (opts) => {
             return destroyed = true;
         },
         redraw: () => {
+            if (!initialized || destroyed) return false;
+
             const range = getConstrainedRange();
             if (range) drawPopover(range);
             else killPopover();
+
+            return true;
         }
     };
 };
